@@ -38,7 +38,7 @@ impl Pong {
             self.vx_ball *= -1.0;
         }
 
-        if self.x_ball <= width - 1.0
+        if self.x_ball <= width
             && self.y_ball >= self.two_paddle
             && self.y_ball <= self.two_paddle + 3.0
         {
@@ -158,8 +158,14 @@ fn render_game(frame: &mut Frame, pong: &Pong) {
 
     let score_split = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
     let [score_one, score_two] = score_split.areas(score);
-    frame.render_widget(Paragraph::new("0").centered().bold(), score_one);
-    frame.render_widget(Paragraph::new("0").centered().bold(), score_two);
+    frame.render_widget(
+        Paragraph::new(pong.one_score.to_string()).centered().bold(),
+        score_one,
+    );
+    frame.render_widget(
+        Paragraph::new(pong.two_score.to_string()).centered().bold(),
+        score_two,
+    );
     let name_split = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
     let [name_one, name_two] = name_split.areas(names);
     frame.render_widget(Paragraph::new("Player 1").centered().bold(), name_one);
