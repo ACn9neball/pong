@@ -23,7 +23,38 @@ struct Pong {
 }
 
 impl Pong {
-    fn update(&mut self, width: f64, height: f64) {}
+    fn update(&mut self, width: f64, height: f64) {
+        self.x_ball += self.vx_ball;
+        self.y_ball += self.vy_ball;
+
+        if self.y_ball <= 0.0 || self.y_ball >= height {
+            self.vy_ball *= -1.0;
+        }
+
+        if self.x_ball <= 1.0
+            && self.y_ball >= self.one_paddle
+            && self.y_ball <= self.one_paddle + 3.0
+        {
+            self.vx_ball *= -1.0;
+        }
+
+        if self.x_ball <= width - 1.0
+            && self.y_ball >= self.two_paddle
+            && self.y_ball <= self.two_paddle + 3.0
+        {
+            self.vx_ball *= -1.0;
+        }
+
+        if self.x_ball < 0.0 {
+            self.x_ball = width / 2.0;
+            self.two_score += 1;
+        }
+
+        if self.x_ball > width {
+            self.x_ball = width / 2.0;
+            self.one_score += 1;
+        }
+    }
 }
 
 fn main() -> color_eyre::Result<()> {
@@ -55,12 +86,31 @@ fn main() -> color_eyre::Result<()> {
                 }
                 _ => {
                     terminal.draw(|frame| render_game(frame, &game))?;
-                    if let Event::Key(key) = event::read()? {
-                        match key.code {
-                            KeyCode::Esc => break Ok(()),
-                            _ => {}
+                    let size = terminal.size()?;
+                    if event::poll(std::time::Duration::from_millis(30))? {
+                        if let Event::Key(key) = event::read()? {
+                            match key.code {
+                                KeyCode::Esc => break Ok(()),
+                                KeyCode::PageUp => {
+                                    game.one_paddle = (game.one_paddle - 1.0).max(0.0)
+                                }
+                                KeyCode::PageDown => {
+                                    game.one_paddle =
+                                        (game.one_paddle + 1.0).min(size.height as f64 - 3.0)
+                                }
+                                KeyCode::Char('q') => {
+                                    game.two_paddle = (game.two_paddle - 1.0).max(0.0)
+                                }
+                                KeyCode::Char('a') => {
+                                    game.two_paddle =
+                                        (game.two_paddle + 1.0).min(size.height as f64 - 3.0)
+                                }
+                                _ => {}
+                            }
                         }
                     }
+
+                    game.update(size.width as f64, size.height as f64);
                 }
             }
         }
